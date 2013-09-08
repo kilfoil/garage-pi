@@ -16,11 +16,15 @@ http.createServer(function (req, resp) {
     var action = req.url.substring(1).split("/")[0];
     console.log('Action: ' + action);
 
-    if(action = 'index')
+    if(action == 'index')
     {
 	sendHtml(resp, './index.html');
     }
 
+    if(action == 'openclose')
+    {
+	runCommand(resp, 'scripts/flash');
+    }
 }).listen(8088);
 
 console.log('Server running at port 8088');
@@ -34,6 +38,18 @@ function sendHtml(response, page) {
     });
 }
 
+function runCommand(response, command){
+    child_process.exec(command,
+		       function (error, stdout, stderr) {
+			   response.writeHead(200, {"Content-Type": "application/json"});
+			   response.write(
+			       JSON.stringify({ 
+				   error: error,
+			       })
+			   );
+			   response.end();
+		       });	
+}
 process.on('SIGTERM', function(){
     console.log('Stopping Motion Server...');
     motion.kill('SIGTERM');
